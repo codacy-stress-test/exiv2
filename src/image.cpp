@@ -786,7 +786,7 @@ ImageType ImageFactory::getType(BasicIo& io) {
   return ImageType::none;
 }
 
-BasicIo::UniquePtr ImageFactory::createIo(const std::string& path, bool useCurl) {
+BasicIo::UniquePtr ImageFactory::createIo(const std::string& path, [[maybe_unused]] bool useCurl) {
   Protocol fProt = fileProtocol(path);
 
 #ifdef EXV_USE_CURL
@@ -803,8 +803,6 @@ BasicIo::UniquePtr ImageFactory::createIo(const std::string& path, bool useCurl)
     return std::make_unique<XPathIo>(path);  // may throw
 
   return std::make_unique<FileIo>(path);
-
-  (void)(useCurl);
 }  // ImageFactory::createIo
 
 Image::UniquePtr ImageFactory::open(const std::string& path, bool useCurl) {
@@ -874,7 +872,7 @@ void append(Blob& blob, const byte* buf, size_t len) {
       blob.reserve(size + 65536);
     }
     blob.resize(size + len);
-    std::memcpy(&blob[size], buf, len);
+    std::copy_n(buf, len, &blob[size]);
   }
 }  // append
 

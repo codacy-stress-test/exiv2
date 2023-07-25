@@ -28,14 +28,16 @@ else()
     list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-find_package (Python3 COMPONENTS Interpreter)
-if (NOT Python3_Interpreter_FOUND)
-    message(WARNING "Python3 was not found. Python tests under the 'tests' folder will not be executed")
+if(BUILD_TESTING)
+    find_package(Python3 COMPONENTS Interpreter)
+    if(NOT Python3_Interpreter_FOUND)
+        message(WARNING "Python3 was not found. Python tests under the 'tests' folder will not be executed.")
+    endif()
 endif()
 
-find_package(Filesystem REQUIRED)
+find_package(Filesystem COMPONENTS Experimental Final REQUIRED)
 
 # don't use Frameworks on the Mac (#966)
 if (APPLE)
