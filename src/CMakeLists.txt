@@ -1,9 +1,3 @@
-# Note that this is a hack for testing the internals of the library. If EXIV2_BUILD_UNIT_TESTS==OFF
-# Then we only export the symbols that are explicitly exported
-if(BUILD_TESTING AND EXIV2_BUILD_UNIT_TESTS)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON) # Requires CMake 3.3.3
-endif()
-
 include(CMakePackageConfigHelpers)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -125,6 +119,7 @@ add_library( exiv2lib
     ${PUBLIC_HEADERS}
     $<TARGET_OBJECTS:exiv2lib_int>
 )
+add_library(Exiv2::exiv2lib ALIAS exiv2lib)
 
 generate_export_header(exiv2lib
     EXPORT_MACRO_NAME EXIV2API
@@ -283,10 +278,13 @@ set(requires_private_for_pc_file "${requires_private_string}" PARENT_SCOPE)
 
 write_basic_package_version_file(exiv2ConfigVersion.cmake COMPATIBILITY ExactVersion)
 
-install(TARGETS exiv2lib EXPORT exiv2Config
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+install(TARGETS exiv2lib EXPORT exiv2Export)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ../cmake/exiv2Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/exiv2Config.cmake
+  INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/exiv2"
 )
 
 install(FILES
@@ -295,7 +293,14 @@ install(FILES
     ${CMAKE_BINARY_DIR}/exiv2lib_export.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/exiv2)
 
-install(EXPORT exiv2Config DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/exiv2")
+install(EXPORT exiv2Export 
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/exiv2"
+    NAMESPACE Exiv2::
+)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/exiv2ConfigVersion.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/exiv2")
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/exiv2ConfigVersion.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/exiv2Config.cmake
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/exiv2")
 
