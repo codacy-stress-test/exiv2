@@ -38,6 +38,10 @@ namespace fs = std::experimental::filesystem;
 #include <unistd.h>  // for getpid()
 #endif
 
+#if __has_include(<mach-o/dyld.h>)
+#include <mach-o/dyld.h>  // for _NSGetExecutablePath()
+#endif
+
 #if defined(__FreeBSD__)
 // clang-format off
 #include <sys/mount.h>
@@ -59,11 +63,11 @@ namespace Exiv2 {
 constexpr std::array<const char*, 2> ENVARDEF{
     "/exiv2.php",
     "40",
-};  //!< @brief default URL for http exiv2 handler and time-out
+};  /// @brief default URL for http exiv2 handler and time-out
 constexpr std::array<const char*, 2> ENVARKEY{
     "EXIV2_HTTP_POST",
     "EXIV2_TIMEOUT",
-};  //!< @brief request keys for http exiv2 handler and time-out
+};  /// @brief request keys for http exiv2 handler and time-out
 
 // *****************************************************************************
 // free functions
@@ -361,9 +365,12 @@ std::string getProcessPath() {
     TCHAR pathbuf[MAX_PATH];
     GetModuleFileName(nullptr, pathbuf, MAX_PATH);
     auto path = fs::path(pathbuf);
-#elif defined(PROC_PIDPATHINFO_MAXSIZE)
-    char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
-    proc_pidpath(getpid(), pathbuf, sizeof(pathbuf));
+#elif defined(__APPLE__)
+    char pathbuf[2048];
+    uint32_t size = sizeof(pathbuf);
+    const int get_exec_path_failure = _NSGetExecutablePath(pathbuf, &size);
+    if (get_exec_path_failure)
+      return "unknown";  // pathbuf not big enough
     auto path = fs::path(pathbuf);
 #elif defined(__sun__)
     auto path = fs::read_symlink(Internal::stringFormat("/proc/%d/path/a.out", getpid()));
