@@ -387,6 +387,8 @@ constexpr TagDetails canonModelId[] = {
     {0x80000480, "EOS R50"},
     {0x80000481, "EOS R6 Mark II"},
     {0x80000487, "EOS R8"},
+    {0x80000491, "PowerShot V10"},
+    {0x80000498, "EOS R100"},
     {0x80000520, "EOS D2000C"},
     {0x80000560, "EOS D6000C"},
 };
@@ -1977,6 +1979,7 @@ constexpr TagDetails canonCsLensType[] = {
     {507, "Canon EF 16-35mm f/4L IS USM"},
     {508, "Canon EF 11-24mm f/4L USM"},
     {508, "Tamron 10-24mm f/3.5-4.5 Di II VC HLD"},  // 1
+    {624, "Sigma 50-100mm f/1.8 DC HSM Art"},
     {624, "Sigma 70-200mm f/2.8 DG OS HSM | S"},
     {747, "Canon EF 100-400mm f/4.5-5.6L IS II USM"},
     {747, "Tamron SP 150-600mm f/5-6.3 Di VC USD G2"},  // 1
@@ -2062,6 +2065,8 @@ constexpr TagDetails canonCsLensType[] = {
     {61182, "Canon RF 400mm F2.8L IS USM + RF1.4x"},
     {61182, "Canon RF 400mm F2.8L IS USM + RF2x"},
     {61182, "Canon RF 600mm F4L IS USM"},
+    {61182, "Canon RF 600mm F4L IS USM + RF1.4x"},
+    {61182, "Canon RF 600mm F4L IS USM + RF2x"},
     {61182, "Canon RF 800mm F5.6L IS USM"},
     {61182, "Canon RF 800mm F5.6L IS USM + RF1.4x"},
     {61182, "Canon RF 800mm F5.6L IS USM + RF2x"},
@@ -2072,7 +2077,11 @@ constexpr TagDetails canonCsLensType[] = {
     {61182, "Canon RF 135mm F1.8 L IS USM"},
     {61182, "Canon RF 24-50mm F4.5-6.3 IS STM"},
     {61182, "Canon RF-S 55-210mm F5-7.1 IS STM"},
-    {65535, "n/a"},
+    {61182, "Canon RF 100-300mm F2.8L IS USM"},
+    {61182, "Canon RF 100-300mm F2.8L IS USM + RF1.4x"},
+    {61182, "Canon RF 100-300mm F2.8L IS USM + RF2x"},
+    {61182, "Canon RF 28mm F2.8 STM"},
+    {65535, N_("n/a")},
 };
 
 //! FlashActivity, tag 0x001c
@@ -2490,7 +2499,7 @@ constexpr TagDetails canonToningEffect[] = {
 };
 
 //! RFLensType, tag 0x003D
-// from https://github.com/exiftool/exiftool/blob/12.49/lib/Image/ExifTool/Canon.pm#L6791
+// from https://github.com/exiftool/exiftool/blob/12.67/lib/Image/ExifTool/Canon.pm#L6833
 constexpr TagDetails canonRFLensType[] = {
     {0, N_("n/a")},
     {257, "Canon RF 50mm F1.2L USM"},
@@ -2529,6 +2538,8 @@ constexpr TagDetails canonRFLensType[] = {
     {290, "Canon RF 400mm F2.8L IS USM + RF1.4x"},
     {291, "Canon RF 400mm F2.8L IS USM + RF2x"},
     {292, "Canon RF 600mm F4L IS USM"},
+    {293, "Canon RF 600mm F4L IS USM + RF1.4x"},
+    {294, "Canon RF 600mm F4L IS USM + RF2x"},
     {295, "Canon RF 800mm F5.6L IS USM"},
     {296, "Canon RF 800mm F5.6L IS USM + RF1.4x"},
     {297, "Canon RF 800mm F5.6L IS USM + RF2x"},
@@ -2539,6 +2550,10 @@ constexpr TagDetails canonRFLensType[] = {
     {303, "Canon RF 135mm F1.8 L IS USM"},
     {304, "Canon RF 24-50mm F4.5-6.3 IS STM"},
     {305, "Canon RF-S 55-210mm F5-7.1 IS STM"},
+    {306, "Canon RF 100-300mm F2.8L IS USM"},
+    {307, "Canon RF 100-300mm F2.8L IS USM + RF1.4x"},
+    {308, "Canon RF 100-300mm F2.8L IS USM + RF2x"},
+    {313, "Canon RF 28mm F2.8 STM"},
 };
 
 // Canon File Info Tag
@@ -2967,7 +2982,7 @@ std::ostream& CanonMakerNote::printSi0x0003(std::ostream& os, const Value& value
     // see also printSi0x0017
     std::ostringstream oss;
     oss.copyfmt(os);
-    auto res = static_cast<int>(100.0 * (static_cast<short>(value.toInt64()) / 32.0 + 5.0) + 0.5);
+    auto res = std::lround(100.0 * (static_cast<short>(value.toInt64()) / 32.0 + 5.0));
     os << std::fixed << std::setprecision(2) << res / 100.0;
     os.copyfmt(oss);
   }
