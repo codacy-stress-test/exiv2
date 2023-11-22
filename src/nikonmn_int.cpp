@@ -744,6 +744,34 @@ constexpr TagDetails nikonAfAreaMode[] = {
     {3, N_("Group Dynamic")}, {4, N_("Single Area (wide)")}, {5, N_("Dynamic Area (wide)")},
 };
 
+//! AF2 Area Mode when Contrast Detect AF is off
+constexpr TagDetails nikonAf2AreaModeContrastDetectAfOff[] = {
+    {0, N_("Single-point AF")},
+    {1, N_("Dynamic-area AF")},
+    {2, N_("Closest Subject")},
+    {3, N_("Group Dynamic AF")},
+    {4, N_("Dynamic-area AF (9 points)")},
+    {5, N_("Dynamic-area AF (21 points)")},
+    {6, N_("Dynamic-area AF (51 points)")},
+    {7, N_("Dynamic-area AF (51 points), 3D-tracking")},
+    {8, N_("Auto-area AF")},
+    {9, N_("3D-tracking")},
+    {10, N_("Single Area AF, Wide")},
+    {11, N_("Dynamic-area AF, Wide")},
+    {12, N_("3D-tracking/Wide")},
+    {13, N_("Group-area AF")},
+    {14, N_("Dynamic-area AF (25 points)")},
+    {15, N_("Dynamic-area AF (72 points)")},
+    {16, N_("Group-area AF (HL)")},
+    {17, N_("Group-area AF (VL)")},
+};
+
+//! AF2 Area Mode when Contrast Detect AF is on
+constexpr TagDetails nikonAf2AreaModeContrastDetectAfOn[] = {
+    {0, N_("Contrast AF")},      {1, N_("Normal-area AF")},      {2, N_("Wide-area AF")},
+    {3, N_("Face-priority AF")}, {4, N_("Subject-tracking AF")}, {5, N_("Pinpoint AF")},
+};
+
 //! AfPoint
 constexpr TagDetails nikonAfPoint[] = {
     {0, N_("Center")},      {1, N_("Top")},        {2, N_("Bottom")},      {3, N_("Mid-left")},
@@ -788,7 +816,7 @@ constexpr TagInfo Nikon3MakerNote::tagInfoAf21_[] = {
     {4, "ContrastDetectAF", N_("Contrast Detect AF"), N_("Contrast detect AF"), IfdId::nikonAf21Id,
      SectionId::makerTags, unsignedByte, 1, EXV_PRINT_TAG(nikonOffOn)},
     {5, "AFAreaMode", N_("AF Area Mode"), N_("AF area mode"), IfdId::nikonAf21Id, SectionId::makerTags, unsignedByte, 1,
-     printValue},
+     printAf2AreaMode},
     {6, "PhaseDetectAF", N_("Phase Detect AF"), N_("Phase detect AF"), IfdId::nikonAf21Id, SectionId::makerTags,
      unsignedByte, 1, EXV_PRINT_TAG(nikonPhaseDetectAF)},
     {7, "PrimaryAFPoint", N_("Primary AF Point"), N_("Primary AF point"), IfdId::nikonAf21Id, SectionId::makerTags,
@@ -1742,6 +1770,21 @@ std::ostream& Nikon3MakerNote::print0x0002(std::ostream& os, const Value& value,
     os << "(" << value << ")";
   }
   return os;
+}
+
+std::ostream& Nikon3MakerNote::printAf2AreaMode(std::ostream& os, const Value& value, const ExifData* metadata) {
+  int contrastDetectAF = 0;
+  if (metadata) {
+    auto pos = metadata->findKey(ExifKey("Exif.NikonAf2.ContrastDetectAF"));
+    if (pos != metadata->end() && pos->count() != 0) {
+      contrastDetectAF = pos->toUint32();
+    }
+  }
+
+  if (contrastDetectAF == 0)
+    return EXV_PRINT_TAG(nikonAf2AreaModeContrastDetectAfOff)(os, value, nullptr);
+  else
+    return EXV_PRINT_TAG(nikonAf2AreaModeContrastDetectAfOn)(os, value, nullptr);
 }
 
 std::ostream& Nikon3MakerNote::print0x0007(std::ostream& os, const Value& value, const ExifData*) {
@@ -3957,6 +4000,7 @@ std::ostream& Nikon3MakerNote::printLensId4ZMount(std::ostream& os, const Value&
       {45, "Nikon", "Nikkor Z 600mm f/6.3 VR S"},
       {46, "Nikon", "Nikkor Z 135mm f/1.8 S Plena"},
       {53251, "Sigma", "56mm F1.4 DC DN | C"},
+      {57346, "Tamron", "35-150mm F/2-2.8 Di III VXD"},
   };
 
   auto lid = static_cast<uint16_t>(value.toInt64());
