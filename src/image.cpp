@@ -208,7 +208,7 @@ uint64_t Image::byteSwap(uint64_t value, bool bSwap) {
   return bSwap ? std::byteswap(value) : value;
 #else
   uint64_t result = 0;
-  auto source_value = reinterpret_cast<byte*>(&value);
+  auto source_value = reinterpret_cast<const byte*>(&value);
   auto destination_value = reinterpret_cast<byte*>(&result);
 
   for (int i = 0; i < 8; i++)
@@ -481,10 +481,8 @@ void Image::printIFDStructure(BasicIo& io, std::ostream& out, Exiv2::PrintStruct
             const size_t restore = io.tell();
             io.seekOrThrow(offset, BasicIo::beg, ErrorCode::kerCorruptedMetadata);  // position
             std::vector<byte> bytes(count);                                         // allocate memory
-            // TODO: once we have C++11 use bytes.data()
             io.readOrThrow(bytes.data(), count, ErrorCode::kerCorruptedMetadata);
             io.seekOrThrow(restore, BasicIo::beg, ErrorCode::kerCorruptedMetadata);
-            // TODO: once we have C++11 use bytes.data()
             IptcData::printStructure(out, makeSliceUntil(bytes.data(), count), depth);
           }
         } else if (option == kpsRecursive && tag == 0x927c /* MakerNote */ && count > 10) {
@@ -815,8 +813,10 @@ BasicIo::UniquePtr ImageFactory::createIo(const std::string& path, [[maybe_unuse
   }
 #endif
 
+#ifdef EXV_ENABLE_WEBREADY
   if (fProt == pHttp)
     return std::make_unique<HttpIo>(path);  // may throw
+#endif
   if (fProt == pFileUri)
     return std::make_unique<FileIo>(pathOfFileUrl(path));
   if (fProt == pStdin || fProt == pDataUri)

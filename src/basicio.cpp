@@ -354,7 +354,7 @@ void FileIo::transfer(BasicIo& src) {
     close();
 
     bool statOk = true;
-    fs::perms origStMode = {};
+    fs::perms origStMode;
     auto pf = path();
 
     Impl::StructStat buf1;
@@ -1314,8 +1314,7 @@ byte* RemoteIo::mmap(bool /*isWriteable*/) {
     size_t blocks = (p_->size_ + blockSize - 1) / blockSize;
     bigBlock_ = new byte[blocks * blockSize];
     for (size_t block = 0; block < blocks; block++) {
-      auto p = p_->blocksMap_[block].getData();
-      if (p) {
+      if (auto p = p_->blocksMap_[block].getData()) {
         size_t nRead = block == (blocks - 1) ? p_->size_ - nRealData : blockSize;
         memcpy(bigBlock_ + (block * blockSize), p, nRead);
         nRealData += nRead;
@@ -1365,6 +1364,7 @@ void RemoteIo::populateFakeData() {
   }
 }
 
+#ifdef EXV_ENABLE_WEBREADY
 //! Internal Pimpl structure of class HttpIo.
 class HttpIo::HttpImpl : public Impl {
  public:
@@ -1504,6 +1504,7 @@ void HttpIo::HttpImpl::writeRemote(const byte* data, size_t size, size_t from, s
 HttpIo::HttpIo(const std::string& url, size_t blockSize) {
   p_ = std::make_unique<HttpImpl>(url, blockSize);
 }
+#endif
 
 #ifdef EXV_USE_CURL
 //! Internal Pimpl structure of class RemoteIo.
