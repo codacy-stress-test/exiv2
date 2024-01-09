@@ -1052,7 +1052,20 @@ constexpr TagDetails canonHighISONoiseReduction[] = {
     {0, N_("Standard")},
     {1, N_("Low")},
     {2, N_("Strong")},
-    {3, N_("off")},
+    {3, N_("Off")},
+};
+
+// Canon DigitalLensOptimizer, tag 0x000a
+constexpr TagDetails canonDigitalLensOptimizer[] = {
+    {0, N_("Off")},
+    {1, N_("Standard")},
+    {2, N_("High")},
+};
+
+// Canon DualPixelRaw, tag 0x000b
+constexpr TagDetails canonDualPixelRaw[] = {
+    {0, N_("Off")},
+    {1, N_("On")},
 };
 
 // Canon LightingOpt Tag
@@ -1067,6 +1080,10 @@ constexpr TagInfo CanonMakerNote::tagInfoLiOp_[] = {
      IfdId::canonLiOpId, SectionId::makerTags, signedLong, -1, EXV_PRINT_TAG(canonLongExposureNoiseReduction)},
     {0x0005, "HighISONoiseReduction", N_("High ISO Noise Reduction"), N_("High ISO Noise Reduction"),
      IfdId::canonLiOpId, SectionId::makerTags, signedLong, -1, EXV_PRINT_TAG(canonHighISONoiseReduction)},
+    {0x000a, "DigitalLensOptimizer", N_("Digital Lens Optimizer"), N_("Digital Lens Optimizer"), IfdId::canonLiOpId,
+     SectionId::makerTags, signedLong, -1, EXV_PRINT_TAG(canonDigitalLensOptimizer)},
+    {0x000b, "DualPixelRaw", N_("Dual Pixel Raw"), N_("Dual Pixel Raw"), IfdId::canonLiOpId, SectionId::makerTags,
+     signedLong, -1, EXV_PRINT_TAG(canonDualPixelRaw)},
     {0xffff, "(UnknownLightingOptimizationTag)", "(UnknownLightingOptimizationTag)",
      N_("UnknownLightingOptimizationTag Selection Tag"), IfdId::canonLiOpId, SectionId::makerTags, signedLong, 1,
      printValue}  // important to add end of tag
@@ -2083,8 +2100,13 @@ constexpr TagDetails canonCsLensType[] = {
     {61182, "Canon RF 100-300mm F2.8L IS USM"},
     {61182, "Canon RF 100-300mm F2.8L IS USM + RF1.4x"},
     {61182, "Canon RF 100-300mm F2.8L IS USM + RF2x"},
+    {61182, "Canon RF 200-800mm F6.3-9 IS USM"},
+    {61182, "Canon RF 200-800mm F6.3-9 IS USM + RF1.4x"},
+    {61182, "Canon RF 200-800mm F6.3-9 IS USM + RF2x"},
     {61182, "Canon RF 10-20mm F4 L IS STM"},
     {61182, "Canon RF 28mm F2.8 STM"},
+    {61182, "Canon RF 24-105mm F2.8 L IS USM Z"},
+    {61182, "Canon RF-S 10-18mm F4.5-6.3 IS STM"},
     {65535, N_("n/a")},
 };
 
@@ -2503,7 +2525,7 @@ constexpr TagDetails canonToningEffect[] = {
 };
 
 //! RFLensType, tag 0x003D
-// from https://github.com/exiftool/exiftool/blob/12.70/lib/Image/ExifTool/Canon.pm#L6896
+// from https://github.com/exiftool/exiftool/blob/12.72/lib/Image/ExifTool/Canon.pm#L6897
 constexpr TagDetails canonRFLensType[] = {
     {0, N_("n/a")},
     {257, "Canon RF 50mm F1.2L USM"},
@@ -2558,8 +2580,13 @@ constexpr TagDetails canonRFLensType[] = {
     {306, "Canon RF 100-300mm F2.8L IS USM"},
     {307, "Canon RF 100-300mm F2.8L IS USM + RF1.4x"},
     {308, "Canon RF 100-300mm F2.8L IS USM + RF2x"},
+    {309, "Canon RF 200-800mm F6.3-9 IS USM"},
+    {310, "Canon RF 200-800mm F6.3-9 IS USM + RF1.4x"},
+    {311, "Canon RF 200-800mm F6.3-9 IS USM + RF2x"},
     {312, "Canon RF 10-20mm F4 L IS STM"},
     {313, "Canon RF 28mm F2.8 STM"},
+    {314, "Canon RF 24-105mm F2.8 L IS USM Z"},
+    {315, "Canon RF-S 10-18mm F4.5-6.3 IS STM"},
 };
 
 // Canon File Info Tag
