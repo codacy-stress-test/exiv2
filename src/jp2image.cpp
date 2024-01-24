@@ -582,12 +582,6 @@ void Jp2Image::writeMetadata() {
 
 }  // Jp2Image::writeMetadata
 
-#ifdef __clang__
-// ignore cast align errors.  dataBuf.pData_ is allocated by malloc() and 4 (or 8 byte aligned).
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-align"
-#endif
-
 void Jp2Image::encodeJp2Header(const DataBuf& boxBuf, DataBuf& outBuf) {
   DataBuf output(boxBuf.size() + iccProfile_.size() + 100);  // allocate sufficient space
   size_t outlen = boxHSize;                                  // now many bytes have we written to output?
@@ -601,7 +595,7 @@ void Jp2Image::encodeJp2Header(const DataBuf& boxBuf, DataBuf& outBuf) {
   while (count < length && !bWroteColor) {
     Internal::enforce(boxHSize <= length - count, ErrorCode::kerCorruptedMetadata);
     Internal::Jp2BoxHeader subBox;
-    std::copy_n(boxBuf.c_data(count), boxHSize, reinterpret_cast<byte*>(&subBox));
+    std::memcpy(&subBox, boxBuf.c_data(count), boxHSize);
     Internal::Jp2BoxHeader newBox = subBox;
 
     if (count < length) {
@@ -658,10 +652,6 @@ void Jp2Image::encodeJp2Header(const DataBuf& boxBuf, DataBuf& outBuf) {
   ul2Data(outBuf.data(0), static_cast<uint32_t>(outlen), bigEndian);
   ul2Data(outBuf.data(4), kJp2BoxTypeHeader, bigEndian);
 }
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
 void Jp2Image::doWriteMetadata(BasicIo& outIo) {
   if (!io_->isopen())
