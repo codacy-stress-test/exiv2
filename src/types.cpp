@@ -216,7 +216,7 @@ std::istream& fromStreamToRational(std::istream& is, T& r) {
     char F = 0;
     float f = 0.F;
     is >> F >> f;
-    f = 2.0F * std::log(f) / std::log(2.0F);
+    f = 2.0F * std::log2(f);
     r = Exiv2::floatToRationalCast(f);
   } else {
     int32_t nominator = 0;
@@ -452,7 +452,7 @@ size_t d2Data(byte* buf, double d, ByteOrder byteOrder) {
 }
 
 void hexdump(std::ostream& os, const byte* buf, size_t len, size_t offset) {
-  const std::string::size_type pos = 8 + 16 * 3 + 2;
+  const std::string::size_type pos = 8 + (16 * 3) + 2;
   const std::string align(pos, ' ');
   std::ios::fmtflags f(os.flags());
 
@@ -465,7 +465,7 @@ void hexdump(std::ostream& os, const byte* buf, size_t len, size_t offset) {
       os << std::setw(2) << std::setfill('0') << std::right << std::hex << static_cast<int>(c) << " ";
       ss << (static_cast<int>(c) >= 31 && static_cast<int>(c) < 127 ? static_cast<char>(buf[i]) : '.');
     } while (++i < len && i % 16 != 0);
-    std::string::size_type width = 9 + ((i - 1) % 16 + 1) * 3;
+    std::string::size_type width = 9 + (((i - 1) % 16 + 1) * 3);
     os << (width > pos ? "" : align.substr(width)) << ss.str() << "\n";
   }
   os << std::dec << std::setfill(' ');

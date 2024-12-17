@@ -1759,7 +1759,7 @@ const TagInfo* Nikon3MakerNote::tagListLd4() {
 }
 
 std::ostream& Nikon3MakerNote::printIiIso(std::ostream& os, const Value& value, const ExifData*) {
-  auto v = std::lround(100.0 * std::exp((value.toInt64() / 12.0 - 5) * std::log(2.0)));
+  auto v = std::lround(100.0 * std::pow(2.0, (value.toInt64() / 12.0) - 5));
   return os << v;
 }
 
@@ -1783,8 +1783,7 @@ std::ostream& Nikon3MakerNote::printAf2AreaMode(std::ostream& os, const Value& v
 
   if (contrastDetectAF == 0)
     return EXV_PRINT_TAG(nikonAf2AreaModeContrastDetectAfOff)(os, value, nullptr);
-  else
-    return EXV_PRINT_TAG(nikonAf2AreaModeContrastDetectAfOn)(os, value, nullptr);
+  return EXV_PRINT_TAG(nikonAf2AreaModeContrastDetectAfOn)(os, value, nullptr);
 }
 
 std::ostream& Nikon3MakerNote::print0x0007(std::ostream& os, const Value& value, const ExifData*) {
@@ -2895,6 +2894,8 @@ std::ostream& Nikon3MakerNote::printLensId(std::ostream& os, const Value& value,
        "SP AF 10-24mm F/3.5-4.5 Di II LD Aspherical (IF)"},
       {0x00, 0x36, 0x1C, 0x2D, 0x34, 0x3C, 0x00, 0x06, 0x00, 0x00, 0x00, "Tamron", "A13",
        "SP AF 11-18mm F/4.5-5.6 Di II LD Aspherical (IF)"},
+      {0xCA, 0x48, 0x27, 0x3E, 0x24, 0x24, 0xDF, 0x4E, 0x00, 0x00, 0x00, "Tamron", "A041",
+       "SP 15-30mm F/2.8 Di VC USD G2"},
       {0xE9, 0x48, 0x27, 0x3E, 0x24, 0x24, 0xDF, 0x0E, 0x00, 0x00, 0x00, "Tamron", "A012",
        "SP 15-30mm F/2.8 Di VC USD"},
       {0xEA, 0x40, 0x29, 0x8E, 0x2C, 0x40, 0xDF, 0x0E, 0x00, 0x00, 0x00, "Tamron", "B016",
@@ -3898,7 +3899,7 @@ std::ostream& Nikon3MakerNote::printTimeZone(std::ostream& os, const Value& valu
   oss.copyfmt(os);
   char sign = value.toInt64() < 0 ? '-' : '+';
   long h = static_cast<long>(std::abs(static_cast<int>(value.toFloat() / 60.0F))) % 24;
-  long min = static_cast<long>(std::abs(static_cast<int>(value.toFloat() - h * 60))) % 60;
+  long min = static_cast<long>(std::abs(static_cast<int>(value.toFloat() - (h * 60)))) % 60;
   os << std::fixed << "UTC " << sign << std::setw(2) << std::setfill('0') << h << ":" << std::setw(2)
      << std::setfill('0') << min;
   os.copyfmt(oss);
@@ -4033,7 +4034,7 @@ std::ostream& Nikon3MakerNote::printApertureLd4(std::ostream& os, const Value& v
   if (temp == 0)
     return os << _("n/a");
 
-  double aperture = pow(2.0, value.toInt64() / 384.0 - 1.0);
+  double aperture = pow(2.0, (value.toInt64() / 384.0) - 1.0);
   std::ostringstream oss;
   oss.copyfmt(os);
   os << std::fixed << std::setprecision(1) << "F" << aperture;

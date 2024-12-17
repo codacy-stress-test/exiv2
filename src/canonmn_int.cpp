@@ -1706,6 +1706,7 @@ constexpr TagDetails canonCsLensType[] = {
     {112, "Sigma 40mm f/1.5 FF High-speed Prime"},   // 1
     {112, "Sigma 105mm f/1.5 FF High-speed Prime"},  // 2
     {117, "Tamron 35-150mm f/2.8-4.0 Di VC OSD"},
+    {117, "Tamron SP 15-30mm f/2.8 Di VC USD G2"},
     {117, "Tamron SP 35mm f/1.4 Di USD"},  // 1
     {124, "Canon MP-E 65mm f/2.8 1-5x Macro Photo"},
     {125, "Canon TS-E 24mm f/3.5L"},
@@ -2836,9 +2837,8 @@ std::ostream& CanonMakerNote::print0x000c(std::ostream& os, const Value& value, 
     is >> l;
     return os << std::setw(4) << std::setfill('0') << std::hex << ((l & 0xffff0000) >> 16) << std::setw(5)
               << std::setfill('0') << std::dec << (l & 0x0000ffff);
-  } else {
-    return os << value;
   }
+  return os << value;
 }
 
 std::ostream& CanonMakerNote::printCs0x0002(std::ostream& os, const Value& value, const ExifData*) {
@@ -2893,7 +2893,7 @@ float string_to_float(std::string const& str) {
   ss >> val;
 
   if (ss.fail()) {
-    throw Error(ErrorCode::kerErrorMessage, std::string("canonmn_int.cpp:string_to_float failed for: ") + str);
+    throw Error(ErrorCode::kerErrorMessage, "canonmn_int.cpp:string_to_float failed for: ", str);
   }
 
   return val;
@@ -3053,7 +3053,7 @@ std::ostream& CanonMakerNote::printLe0x0000(std::ostream& os, const Value& value
 std::ostream& CanonMakerNote::printSi0x0001(std::ostream& os, const Value& value, const ExifData*) {
   std::ios::fmtflags f(os.flags());
   if (value.typeId() == unsignedShort && value.count() > 0) {
-    os << std::exp(canonEv(value.toInt64()) / 32 * std::log(2.0F)) * 100.0F;
+    os << std::pow(2.0F, canonEv(value.toInt64()) / 32) * 100.0F;
   }
   os.flags(f);
   return os;
@@ -3063,7 +3063,7 @@ std::ostream& CanonMakerNote::printSi0x0002(std::ostream& os, const Value& value
   std::ios::fmtflags f(os.flags());
   if (value.typeId() == unsignedShort && value.count() > 0) {
     // Ported from Exiftool by Will Stokes
-    os << std::exp(canonEv(value.toInt64()) * std::log(2.0F)) * 100.0F / 32.0F;
+    os << std::pow(2.0F, canonEv(value.toInt64())) * 100.0F / 32.0F;
   }
   os.flags(f);
   return os;
@@ -3172,7 +3172,7 @@ std::ostream& CanonMakerNote::printSi0x0017(std::ostream& os, const Value& value
 
   std::ostringstream oss;
   oss.copyfmt(os);
-  os << std::fixed << std::setprecision(2) << value.toInt64() / 8.0 - 6.0;
+  os << std::fixed << std::setprecision(2) << (value.toInt64() / 8.0) - 6.0;
   os.copyfmt(oss);
   return os;
 }

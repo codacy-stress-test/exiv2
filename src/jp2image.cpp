@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <array>
+#include <fstream>
 #include <iostream>
 
 namespace Exiv2 {
@@ -100,9 +101,9 @@ Jp2Image::Jp2Image(BasicIo::UniquePtr io, bool create) : Image(ImageType::jp2, m
 // Obtains the ascii version from the box.type
 std::string Jp2Image::toAscii(uint32_t n) {
   const auto p = reinterpret_cast<const char*>(&n);
-  if (isBigEndianPlatform())
-    return std::string(p, p + 4);
   std::string result(p, p + 4);
+  if (isBigEndianPlatform())
+    return result;
   std::reverse(result.begin(), result.end());
   return result;
 }
@@ -218,13 +219,12 @@ void Jp2Image::readMetadata() {
             std::copy_n(data.c_data(pad), icc.size(), icc.begin());
 #ifdef EXIV2_DEBUG_MESSAGES
             const char* iccPath = "/tmp/libexiv2_jp2.icc";
-            FILE* f = fopen(iccPath, "wb");
-            if (f) {
-              fwrite(icc.c_data(), icc.size(), 1, f);
-              fclose(f);
+            if (auto f = std::ofstream(iccPath, std::ios::binary)) {
+              f.write(reinterpret_cast<const char*>(icc.c_data()), static_cast<std::streamsize>(icc.size()));
+              f.close();
+              std::cout << "Exiv2::Jp2Image::readMetadata: wrote iccProfile " << icc.size() << " bytes to " << iccPath
+                        << '\n';
             }
-            std::cout << "Exiv2::Jp2Image::readMetadata: wrote iccProfile " << icc.size() << " bytes to " << iccPath
-                      << '\n';
 #endif
             setIccProfile(std::move(icc));
           }
@@ -713,8 +713,7 @@ void Jp2Image::doWriteMetadata(BasicIo& outIo) {
     }
 
     // Prevent a malicious file from causing a large memory allocation.
-    Internal::enforce(box.length - 8 <= static_cast<size_t>(io_->size() - io_->tell()),
-                      ErrorCode::kerCorruptedMetadata);
+    Internal::enforce(box.length - 8 <= io_->size() - io_->tell(), ErrorCode::kerCorruptedMetadata);
 
     // Read whole box : Box header + Box data (not fixed size - can be null).
     DataBuf boxBuf(box.length);                          // Box header (8 bytes) + box data.

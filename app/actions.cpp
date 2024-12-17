@@ -180,7 +180,7 @@ static int setModeAndPrintStructure(Exiv2::PrintStructureOption option, const st
     std::string str = output.str();
     if (result == 0 && !str.empty()) {
       Exiv2::DataBuf iccProfile(str.size());
-      Exiv2::DataBuf ascii(str.size() * 3 + 1);
+      Exiv2::DataBuf ascii((str.size() * 3) + 1);
       ascii.write_uint8(str.size() * 3, 0);
       std::copy(str.begin(), str.end(), iccProfile.begin());
       if (Exiv2::base64encode(iccProfile.c_data(), str.size(), reinterpret_cast<char*>(ascii.data()), str.size() * 3)) {
@@ -1795,14 +1795,12 @@ int metacopy(const std::string& source, const std::string& tgt, Exiv2::ImageType
   // if we used a temporary target, copy it to stdout
   if (rc == 0 && bStdout) {
     _setmode(fileno(stdout), O_BINARY);
-    if (auto f = std::fopen(target.c_str(), "rb")) {
-      char buffer[8 * 1024];
-      size_t n = 1;
-      while (!feof(f) && n > 0) {
-        n = fread(buffer, 1, sizeof buffer, f);
-        fwrite(buffer, 1, n, stdout);
+    if (auto f = std::ifstream(target, std::ios::binary)) {
+      std::vector<char> buffer(8 * 1024);
+
+      while (f.read(buffer.data(), buffer.size()) || f.gcount() > 0) {
+        std::fwrite(buffer.data(), 1, f.gcount(), stdout);
       }
-      fclose(f);
     }
   }
 
@@ -1827,7 +1825,7 @@ int renameFile(std::string& newPath, const tm* tm) {
   auto oldFsPath = fs::path(path);
   std::string format = Params::instance().format_;
   std::string filename = p.stem().string();
-  std::string basesuffix = "";
+  std::string basesuffix;
   int pos = filename.find('.');
   if (pos > 0)
     basesuffix = filename.substr(filename.find('.'));
